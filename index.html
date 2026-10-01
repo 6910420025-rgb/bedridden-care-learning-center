@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareLink - ศูนย์รวมความรู้การดูแลผู้ป่วยติดเตียงสำหรับผู้สูงอายุ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Prompt & Sarabun) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Sarabun', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        },
+                        care: {
+                            teal: '#0d9488',
+                            blue: '#0284c7',
+                            warm: '#f59e0b',
+                        }
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
+                        'hover-card': '0 20px 25px -5px rgba(13, 148, 136, 0.1), 0 8px 10px -6px rgba(13, 148, 136, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', 'Sarabun', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #0d9488;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #0f766e 50%, #115e59 100%);
+        }
+    </style>
+</head>
+<body class="text-slate-700 min-h-screen flex flex-col justify-between antialiased selection:bg-teal-500 selection:text-white">
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer group" onclick="resetFilters()">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform duration-300">
+                        <i class="fa-solid fa-heart-pulse text-2xl animate-pulse"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight leading-none">CareLink</span>
+                            <span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-teal-200">THAI</span>
+                        </div>
+                        <span class="text-xs text-teal-600 font-medium hidden sm:block mt-0.5">ศูนย์รวมความรู้ & คู่มือดูแลผู้ป่วยติดเตียง</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links / Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <button onclick="toggleFavoritesOnly()" id="favToggleBtn" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 transition duration-200">
+                        <i class="fa-solid fa-star text-amber-400"></i>
+                        <span class="hidden sm:inline">รายการที่บันทึก</span>
+                        <span id="favCountBadge" class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button onclick="openSuggestModal()" class="flex items-center space-x-2 px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-md shadow-teal-600/20 transition duration-200 hover:scale-[1.02]">
+                        <i class="fa-solid fa-plus-circle text-base"></i>
+                        <span class="hidden sm:inline">แบ่งปันลิงก์ความรู้</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner & Search Section -->
+    <section class="hero-gradient text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <!-- Abstract Background Decorative Circles -->
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-teal-400/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md text-teal-200 border border-white/20 rounded-full text-xs font-medium mb-4 shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>คลังวิดีโอสาธิต & คู่มือการแพทย์ถูกต้องตามหลักวิชาการ</span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight mb-4 tracking-tight drop-shadow-sm">
+                ศูนย์รวมคลิปวิดีโอ & คู่มือปฏิบัติ<br class="hidden sm:block">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-emerald-200 to-amber-200">
+                    การดูแลผู้ป่วยติดเตียงที่บ้าน
+                </span>
+            </h1>
+            
+            <p class="text-slate-300 text-xs sm:text-base max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+                เรียนรู้ขั้นตอนการพยาบาล สาธิตการใช้อุปกรณ์ และการทำกายภาพบำบัด จากโรงพยาบาลและสถาบันการแพทย์ชั้นนำของไทย
+            </p>
+
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto relative group">
+                <div class="relative flex items-center shadow-2xl rounded-2xl overflow-hidden p-1 bg-white/10 backdrop-blur-md border border-white/20 focus-within:border-teal-300 transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 text-slate-400 text-lg"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="ค้นเรื่องที่ต้องการ เช่น ให้อาหารสายยาง, ดูดเสมหะ, แผลกดทับ, ออกซิเจน..." 
+                        class="w-full pl-12 pr-10 py-3.5 sm:py-4 bg-white text-slate-800 placeholder-slate-400 rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-inner">
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-4 text-slate-400 hover:text-slate-600 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Popular Quick Tags -->
+            <div class="mt-5 flex flex-wrap justify-center items-center gap-2 text-xs text-slate-300">
+                <span class="font-medium text-teal-200 flex items-center"><i class="fa-solid fa-fire text-amber-400 mr-1.5"></i>คำค้นยอดนิยม:</span>
+                <button onclick="quickSearch('ให้อาหารทางสาย')" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition duration-200">#ให้อาหารทางสาย</button>
+                <button onclick="quickSearch('ดูดเสมหะ')" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition duration-200">#ดูดเสมหะ</button>
+                <button onclick="quickSearch('แผลกดทับ')" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition duration-200">#แผลกดทับ</button>
+                <button onclick="quickSearch('ให้ออกซิเจน')" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition duration-200">#ให้ออกซิเจน</button>
+                <button onclick="quickSearch('กายภาพบำบัด')" class="px-3 py-1 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition duration-200">#กายภาพบำบัด</button>
+            </div>
+
+            <!-- Visual Stats Bar -->
+            <div class="grid grid-cols-3 gap-3 max-w-xl mx-auto mt-10 pt-8 border-t border-white/10 text-center">
+                <div>
+                    <div class="text-xl sm:text-2xl font-bold text-teal-300">100%</div>
+                    <div class="text-[11px] sm:text-xs text-slate-300">ความรู้ทางการแพทย์</div>
+                </div>
+                <div>
+                    <div class="text-xl sm:text-2xl font-bold text-amber-300">24 ชม.</div>
+                    <div class="text-[11px] sm:text-xs text-slate-300">สายด่วนให้ความช่วยเหลือ</div>
+                </div>
+                <div>
+                    <div class="text-xl sm:text-2xl font-bold text-emerald-300">ฟรี</div>
+                    <div class="text-[11px] sm:text-xs text-slate-300">เข้าถึงได้ตลอดเวลา</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Left Sidebar: Filters & Quick Tools -->
+            <aside class="lg:col-span-1 space-y-6">
+                
+                <!-- Category Filter Buttons -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 sticky top-24">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center justify-between pb-3 border-b border-slate-100">
+                        <span class="flex items-center"><i class="fa-solid fa-layer-group text-teal-600 mr-2.5"></i>หมวดหมู่เนื้อหา</span>
+                        <button onclick="resetFilters()" class="text-xs text-teal-600 hover:text-teal-800 font-normal underline decoration-dotted">ทั้งหมด</button>
+                    </h2>
+                    <nav class="space-y-1.5" id="categoryContainer">
+                        <!-- Dynamic Categories Injection -->
+                    </nav>
+
+                    <hr class="my-5 border-slate-100">
+
+                    <!-- Daily Care Checklist Widget -->
+                    <div class="bg-gradient-to-br from-emerald-50/50 to-teal-50/50 rounded-xl p-4 border border-emerald-200/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center">
+                                <i class="fa-solid fa-clipboard-check text-emerald-600 mr-2 text-base"></i>
+                                กิจวัตรผู้ดูแลประจำวัน
+                            </h3>
+                            <span class="text-[11px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full" id="checklistProgress">0/5</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mb-3">บันทึกกิจวัตรที่ทำเรียบร้อยเพื่อสุขอนามัยที่ดี</p>
+                        
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full mb-3 overflow-hidden">
+                            <div id="checklistProgressBar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                        </div>
+
+                        <div class="space-y-2 text-xs" id="checklistItems">
+                            <label class="flex items-start space-x-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                <input type="checkbox" onchange="updateChecklist()" class="mt-0.5 rounded text-teal-600 focus:ring-teal-500">
+                                <span class="text-slate-700 leading-tight">พลิกตัวผู้ป่วยทุกๆ 2 ชั่วโมง</span>
+                            </label>
+                            <label class="flex items-start space-x-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                <input type="checkbox" onchange="updateChecklist()" class="mt-0.5 rounded text-teal-600 focus:ring-teal-500">
+                                <span class="text-slate-700 leading-tight">ทำความสะอาดเช็ดตัว/เช็ดช่องปาก</span>
+                            </label>
+                            <label class="flex items-start space-x-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                <input type="checkbox" onchange="updateChecklist()" class="mt-0.5 rounded text-teal-600 focus:ring-teal-500">
+                                <span class="text-slate-700 leading-tight">ตรวจเช็กผิวหนังและจุดกดทับ</span>
+                            </label>
+                            <label class="flex items-start space-x-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                <input type="checkbox" onchange="updateChecklist()" class="mt-0.5 rounded text-teal-600 focus:ring-teal-500">
+                                <span class="text-slate-700 leading-tight">ดูแลระบบขับถ่าย & เปลี่ยนผ้าอ้อม</span>
+                            </label>
+                            <label class="flex items-start space-x-2.5 p-1.5 rounded-lg hover:bg-white cursor-pointer transition">
+                                <input type="checkbox" onchange="updateChecklist()" class="mt-0.5 rounded text-teal-600 focus:ring-teal-500">
+                                <span class="text-slate-700 leading-tight">ฝึกขยับข้อต่อ/กายภาพเบื้องต้น</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Hotlines Widget -->
+                    <div class="mt-5 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-xl p-4 shadow-md shadow-rose-500/20">
+                        <h3 class="font-bold text-sm mb-2 flex items-center">
+                            <i class="fa-solid fa-phone-volume mr-2 animate-bounce"></i>
+                            เบอร์โทรสายด่วนฉุกเฉิน 24 ชม.
+                        </h3>
+                        <p class="text-[11px] text-rose-100 mb-3">กดโทรออกทันทีเมื่อเกิดเหตุฉุกเฉิน</p>
+                        
+                        <div class="space-y-2 text-xs">
+                            <a href="tel:1669" class="flex items-center justify-between p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition group">
+                                <div>
+                                    <div class="font-bold text-white text-sm group-hover:underline">1669</div>
+                                    <div class="text-[10px] text-rose-100">การแพทย์ฉุกเฉิน (เรียกรถพยาบาล)</div>
+                                </div>
+                                <span class="w-7 h-7 rounded-full bg-white text-rose-600 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-phone text-xs"></i>
+                                </span>
+                            </a>
+                            <a href="tel:1479" class="flex items-center justify-between p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition group">
+                                <div>
+                                    <div class="font-bold text-white text-sm group-hover:underline">1479</div>
+                                    <div class="text-[10px] text-rose-100">สายด่วนคนพิการ/ผู้สูงอายุ</div>
+                                </div>
+                                <span class="w-7 h-7 rounded-full bg-white text-rose-600 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-phone text-xs"></i>
+                                </span>
+                            </a>
+                            <a href="tel:1300" class="flex items-center justify-between p-2.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition group">
+                                <div>
+                                    <div class="font-bold text-white text-sm group-hover:underline">1300</div>
+                                    <div class="text-[10px] text-rose-100">ศูนย์ช่วยเหลือสังคม (กระทรวง พม.)</div>
+                                </div>
+                                <span class="w-7 h-7 rounded-full bg-white text-rose-600 flex items-center justify-center font-bold">
+                                    <i class="fa-solid fa-phone text-xs"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </aside>
+
+            <!-- Main Content Area: Resource Cards with Visual Previews -->
+            <section class="lg:col-span-3 space-y-6">
+                
+                <!-- Status & Active Filters Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs sm:text-sm text-slate-500">กำลังแสดง:</span>
+                        <span id="currentFilterLabel" class="text-xs sm:text-sm font-bold text-teal-800 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200">
+                            ทั้งหมด
+                        </span>
+                        <span id="resourceCount" class="text-xs text-slate-400 font-medium">
+                            (0 รายการ)
+                        </span>
+                    </div>
+
+                    <!-- Content Type Filter Pills -->
+                    <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl text-xs">
+                        <button onclick="setTypeFilter('all')" id="typeBtn-all" class="px-3 py-1.5 rounded-lg font-medium text-slate-800 bg-white shadow-sm transition">ทั้งหมด</button>
+                        <button onclick="setTypeFilter('video')" id="typeBtn-video" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-play text-rose-500 text-[10px]"></i>
+                            <span>วิดีโอสาธิต</span>
+                        </button>
+                        <button onclick="setTypeFilter('article')" id="typeBtn-article" class="px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-newspaper text-blue-500 text-[10px]"></i>
+                            <span>คู่มือ/บทความ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resources Grid Container -->
+                <div id="resourcesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cards with Real Video Thumbnails and Images Injected via JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 p-8 shadow-sm">
+                    <div class="w-20 h-20 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">ไม่พบข้อมูลความรู้ที่คุณค้นหา</h3>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto mb-6">ลองเปลี่ยนคำค้นหา ค้นหาด้วยคำใกล้เคียง หรือเลือกสลับหมวดหมู่อื่นๆ</p>
+                    <button onclick="resetFilters()" class="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 shadow-md transition">
+                        ล้างการค้นหา / แสดงบทความทั้งหมด
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Suggestion Modal Form -->
+    <div id="suggestModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 transform transition-all duration-300">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                    <i class="fa-solid fa-paper-plane text-teal-600 mr-2.5"></i> แบ่งปันลิงก์ความรู้
+                </h3>
+                <button onclick="closeSuggestModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="handleSuggestSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อบทความ / วิดีโอ *</label>
+                    <input type="text" id="suggestTitle" required placeholder="เช่น วิธีการเปลี่ยนผ้าอ้อมบนเตียง" class="w-full text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">URL / ลิงก์ความรู้ *</label>
+                    <input type="url" id="suggestUrl" required placeholder="https://..." class="w-full text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">หมวดหมู่</label>
+                    <select id="suggestCategory" class="w-full text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        <option value="bedsores">แผลกดทับ & การพลิกตัว</option>
+                        <option value="feeding">อาหาร & การให้อาหารทางสายยาง</option>
+                        <option value="hygiene">สุขอนามัย & การทำความสะอาด</option>
+                        <option value="physio">กายภาพบำบัด & การฟื้นฟู</option>
+                        <option value="equipment">อุปกรณ์การแพทย์ & การจัดห้อง</option>
+                        <option value="mental">สุขภาพจิตผู้ดูแล & สิทธิผู้สูงอายุ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">เจ้าของข้อมูล / แหล่งที่มา</label>
+                    <input type="text" id="suggestSource" placeholder="เช่น โรงพยาบาลศิริราช, หมอครอบครัว" class="w-full text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeSuggestModal()" class="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-100 rounded-xl transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition">ส่งข้อมูลแนะนำ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300 border border-slate-700">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+        <span id="toastMessage" class="text-xs sm:text-sm font-medium">บันทึกเรียบร้อย</span>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-12 mt-16 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-800 pb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-teal-600/30">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold text-white block leading-none">CareLink Thailand</span>
+                        <span class="text-[11px] text-teal-400 font-normal">ศูนย์รวมความรู้และคู่มือดูแลผู้ป่วยติดเตียง</span>
+                    </div>
+                </div>
+                <p class="text-slate-400 text-center md:text-right max-w-md">
+                    รวบรวมข้อมูลด้วยความปรารถนาดี เพื่อสนับสนุนและเป็นกำลังใจให้แก่ผู้ดูแลผู้สูงอายุติดเตียงทั่วประเทศ
+                </p>
+            </div>
+            
+            <div class="p-5 bg-slate-800/80 rounded-2xl border border-slate-700 text-slate-300 leading-relaxed text-[11px]">
+                <strong class="text-amber-400 block mb-1 text-xs"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i> ข้อจำกัดความรับผิดชอบทางการแพทย์ (Medical Disclaimer):</strong>
+                เนื้อหาและวิดีโอสาธิตทั้งหมดบนเว็บไซต์นี้ จัดทำขึ้นเพื่อวัตถุประสงค์ในการศึกษาและการเรียนรู้เบื้องต้นเท่านั้น ไม่สามารถใช้ทดแทนการวินิจฉัย คำแนะนำ หรือการรักษาจากแพทย์ผู้เชี่ยวชาญได้ หากผู้ป่วยมีอาการทรุดลงหรือเกิดเหตุฉุกเฉิน โปรดติดต่อสถานพยาบาลหรือโทรแจ้งสายด่วนกู้ชีพ 1669 ทันที
+            </div>
+
+            <div class="text-center text-slate-500 pt-2">
+                © 2026 CareLink Thailand. พัฒนาขึ้นด้วยความใส่ใจเพื่อผู้ดูแลทุกคน
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Database of Resources with Realistic Thumbnail Previews & Images
+        const resourcesData = [
+            {
+                id: 1,
+                title: "การให้ออกซิเจนผู้ป่วยที่บ้านอย่างถูกวิธีและปลอดภัย",
+                category: "equipment",
+                type: "video",
+                source: "วิดีโอสาธิตการพยาบาล",
+                url: "https://www.youtube.com/watch?v=9hYN3Gx61FE&t=16s",
+                imageUrl: "https://img.youtube.com/vi/9hYN3Gx61FE/hqdefault.jpg",
+                description: "คู่มือและวิดีโอแนะนำขั้นตอนการเตรียมและใช้อุปกรณ์ให้ออกซิเจนผู้ป่วยที่บ้าน การตั้งค่าปริมาณลม การดูแลกระปุกน้ำเพิ่มความชื้น และข้อควรระวังความปลอดภัย",
+                tags: ["ให้ออกซิเจน", "ออกซิเจนที่บ้าน", "อุปกรณ์การแพทย์"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 2,
+                title: "สาธิตการดูดเสมหะทางท่อเจาะคออย่างถูกวิธีและปลอดเชื้อ",
+                category: "hygiene",
+                type: "video",
+                source: "วิดีโอสาธิตทางการแพทย์",
+                url: "https://www.youtube.com/watch?v=ZHvloiczAKU",
+                imageUrl: "https://img.youtube.com/vi/ZHvloiczAKU/hqdefault.jpg",
+                description: "ขั้นตอนและเทคนิคการดูดเสมหะสำหรับผู้ป่วยที่มีท่อเจาะคอ การเตรียมอุปกรณ์ปลอดเชื้อ การปรับแรงดัน และการสังเกตลักษณะเสมหะ",
+                tags: ["ดูดเสมหะ", "ท่อเจาะคอ", "ปลอดเชื้อ"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 3,
+                title: "ขั้นตอนการให้อาหารทางสายยาง (คณะพยาบาลศาสตร์ มหาวิทยาลัยมหิดล)",
+                category: "feeding",
+                type: "video",
+                source: "คณะพยาบาลศาสตร์ มหาวิทยาลัยมหิดล",
+                url: "https://www.youtube.com/watch?v=r55jAblsm7I",
+                imageUrl: "https://img.youtube.com/vi/r55jAblsm7I/hqdefault.jpg",
+                description: "คู่มือสาธิตการให้อาหารทางสายยาง (NG Tube) อย่างละเอียด การจัดท่าทางผู้ป่วย การทดสอบตำแหน่งสาย การปล่อยอาหารและน้ำตามลำดับ",
+                tags: ["ให้อาหารทางสาย", "สายยาง", "มหิดล"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 4,
+                title: "การใส่และการดูแลสายสวนปัสสาวะสำหรับผู้ป่วยติดเตียง",
+                category: "hygiene",
+                type: "video",
+                source: "วิดีโอสาธิตการพยาบาล",
+                url: "https://www.youtube.com/watch?v=VsWTbGO3zzQ",
+                imageUrl: "https://img.youtube.com/vi/VsWTbGO3zzQ/hqdefault.jpg",
+                description: "คำแนะนำการดูแลผู้ป่วยที่ใส่สายสวนปัสสาวะ การทำความสะอาดอย่างถูกต้อง การเทถุงปัสสาวะ และการป้องกันการติดเชื้อทางเดินปัสสาวะ",
+                tags: ["สายสวนปัสสาวะ", "สวนปัสสาวะ", "สุขอนามัย"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 5,
+                title: "การใช้งานและการดูแลรักษาที่นอนลมสำหรับผู้ป่วยติดเตียง",
+                category: "equipment",
+                type: "video",
+                source: "วิดีโอสาธิตอุปกรณ์ผู้ป่วย",
+                url: "https://www.youtube.com/watch?v=vBB6W-XJCeg",
+                imageUrl: "https://img.youtube.com/vi/vBB6W-XJCeg/hqdefault.jpg",
+                description: "การเลือกและใช้งานที่นอนลมอย่างถูกวิธี การปรับระดับความตึงของลม การปูลินินทับที่นอนลม เพื่อป้องกันและลดโอกาสเกิดแผลกดทับ",
+                tags: ["ที่นอนลม", "แผลกดทับ", "เบาะลม"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 6,
+                title: "การทำแผลกดทับระดับ 2 อย่างถูกวิธีและปลอดเชื้อ",
+                category: "bedsores",
+                type: "video",
+                source: "หมอครอบครัว",
+                url: "https://www.youtube.com/watch?v=d0rrcG5cbMk",
+                imageUrl: "https://img.youtube.com/vi/d0rrcG5cbMk/hqdefault.jpg",
+                description: "สาธิตขั้นตอนการทำความสะอาดแผลกดทับระดับ 2 การล้างแผลด้วยน้ำเกลือ การเลือกใช้วัสดุปิดแผลที่เหมาะสม และเทคนิคป้องกันการติดเชื้อ",
+                tags: ["ทำแผลกดทับ", "แผลกดทับ", "หมอครอบครัว"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 7,
+                title: "กายภาพบำบัด สำหรับผู้ป่วยโรคหลอดเลือดสมอง (Stroke)",
+                category: "physio",
+                type: "video",
+                source: "คณะแพทยศาสตร์ มหาวิทยาลัยนเรศวร",
+                url: "https://www.youtube.com/watch?v=ls0ZUehgiMA",
+                imageUrl: "https://img.youtube.com/vi/ls0ZUehgiMA/hqdefault.jpg",
+                description: "ชุดความรู้การทำกายภาพบำบัดสำหรับผู้ป่วย stroke ที่บ้าน ฝึกกำลังกล้ามเนื้อแขนขา ป้องกันข้อติดแข็ง และการจัดท่าทางเพื่อฟื้นฟูร่างกาย",
+                tags: ["กายภาพบำบัด", "หลอดเลือดสมอง", "Stroke", "ม.นเรศวร"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            },
+            {
+                id: 8,
+                title: "สิทธิผู้สูงอายุ มีอะไรบ้าง เช็กเลย! (สูงวัยใจแซ่บ)",
+                category: "mental",
+                type: "video",
+                source: "กรมกิจการผู้สูงอายุ / Silver Club",
+                url: "https://www.youtube.com/watch?v=mRYly1KSRQQ",
+                imageUrl: "https://img.youtube.com/vi/mRYly1KSRQQ/hqdefault.jpg",
+                description: "สรุปสิทธิประโยชน์ สวัสดิการสังคม เบี้ยยังชีพ และการช่วยเหลือต่างๆ สำหรับผู้สูงอายุ 60 ปีขึ้นไป จากกรมกิจการผู้สูงอายุ กระทรวง พม.",
+                tags: ["สิทธิผู้สูงอายุ", "สวัสดิการรัฐ", "เบี้ยยังชีพ", "กระทรวง พม."],
+                readTime: "วิดีโอสาธิต",
+                featured: false
+            },
+            {
+                id: 9,
+                title: "คู่มือการป้องกันและการดูแลแผลกดทับในผู้ป่วยติดเตียง",
+                category: "bedsores",
+                type: "article",
+                source: "คณะแพทยศาสตร์ ศิริราชพยาบาล",
+                url: "https://www.si.mahidol.ac.th/th/healthdetail.asp?aid=1122",
+                imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+                description: "เรียนรู้ระดับของแผลกดทับ เทคนิคการเลือกเบาะลม การทำความสะอาดแผลอย่างถูกต้อง และโภชนาการที่ช่วยให้แผลหายเร็วขึ้น",
+                tags: ["แผลกดทับ", "ศิริราช", "คู่มือดูแล"],
+                readTime: "อ่าน 5 นาที",
+                featured: false
+            },
+            {
+                id: 10,
+                title: "การรับมือความเครียดและภาวะ Burnout ของผู้ดูแลผู้ป่วย (Caregiver Care)",
+                category: "mental",
+                type: "article",
+                source: "กรมสุขภาพจิต",
+                url: "https://www.dmh.go.th",
+                imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+                description: "การประเมินภาวะความเหนื่อยล้าทางอารมณ์ของผู้ดูแล เทคนิคการแบ่งเวลาพักผ่อน การขอความช่วยเหลือ และแหล่งเยียวยาจิตใจ",
+                tags: ["สุขภาพจิตผู้ดูแล", "ความเครียด", "กรมสุขภาพจิต"],
+                readTime: "อ่าน 5 นาที",
+                featured: false
+            },
+            {
+                id: 11,
+                title: "สิทธิและสวัสดิการรัฐสำหรับผู้สูงอายุและผู้ป่วยติดบ้านติดเตียง",
+                category: "mental",
+                type: "article",
+                source: "กระทรวงการพัฒนาสังคมและความมั่นคงของมนุษย์ (พม.)",
+                url: "https://www.m-society.go.th",
+                imageUrl: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+                description: "สรุปขั้นตอนการขอรับเงินเบี้ยคนพิการ เบี้ยผู้สูงอายุ การยื่นขอรับผ้าอ้อมผู้ใหญ่ฟรีจากกองทุน สปสช. และบริการนักบาลีท้องถิ่น",
+                tags: ["สวัสดิการรัฐ", "สปสช", "ผ้าอ้อมฟรี"],
+                readTime: "อ่าน 8 นาที",
+                featured: false
+            },
+            {
+                id: 12,
+                title: "ภาวะเหนื่อยล้าของผู้ดูแล (Caregiver burden) และแนวทางรับมือ",
+                category: "mental",
+                type: "video",
+                source: "123Wellness",
+                url: "https://www.youtube.com/watch?v=xIuOYoQPodU",
+                imageUrl: "https://img.youtube.com/vi/xIuOYoQPodU/hqdefault.jpg",
+                description: "ทำความเข้าใจภาวะเหนื่อยล้าของผู้ดูแลผู้ป่วยติดเตียง สัญญาณเตือนของอาการหมดไฟ (Burnout) พร้อมแนวทางรับมือและผ่อนคลายความตึงเครียดสะสม",
+                tags: ["ภาวะเหนื่อยล้า", "CaregiverBurden", "สุขภาพจิตผู้ดูแล", "ความเครียด"],
+                readTime: "วิดีโอสาธิต",
+                featured: true
+            }
+        ];
+
+        // Categories Configuration
+        const categories = [
+            { id: 'all', name: 'ทั้งหมด', icon: 'fa-border-all' },
+            { id: 'bedsores', name: 'แผลกดทับ & พลิกตัว', icon: 'fa-bed-pulse' },
+            { id: 'feeding', name: 'อาหาร & สายยาง', icon: 'fa-utensils' },
+            { id: 'hygiene', name: 'สุขอนามัย & ดูดเสมหะ', icon: 'fa-pump-soap' },
+            { id: 'physio', name: 'กายภาพ & ข้อติด', icon: 'fa-child-reaching' },
+            { id: 'equipment', name: 'อุปกรณ์ & ออกซิเจน', icon: 'fa-hospital' },
+            { id: 'mental', name: 'สุขภาพจิต & สิทธิประโยชน์', icon: 'fa-heart-circle-check' },
+        ];
+
+        // App State Variables
+        let currentCategory = 'all';
+        let currentSearchQuery = '';
+        let currentTypeFilter = 'all';
+        let showFavoritesOnly = false;
+        let favorites = JSON.parse(localStorage.getItem('carelink_favs') || '[]');
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderResources();
+            updateFavBadge();
+            loadChecklistState();
+        });
+
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            container.innerHTML = categories.map(cat => {
+                const isActive = currentCategory === cat.id && !showFavoritesOnly;
+                
+                // Calculate count for category
+                const count = cat.id === 'all' 
+                    ? resourcesData.length 
+                    : resourcesData.filter(r => r.category === cat.id).length;
+
+                return `
+                    <button onclick="selectCategory('${cat.id}')" 
+                        class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition duration-200 ${
+                            isActive 
+                            ? 'bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-800 font-bold border border-teal-200 shadow-sm' 
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid ${cat.icon} ${isActive ? 'text-teal-600' : 'text-slate-400'} text-base"></i>
+                            <span>${cat.name}</span>
+                        </div>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full ${isActive ? 'bg-teal-200/60 text-teal-900 font-bold' : 'bg-slate-100 text-slate-500'}">
+                            ${count}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderResources() {
+            const grid = document.getElementById('resourcesGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Filter Logic
+            let filtered = resourcesData.filter(item => {
+                const matchesCategory = (currentCategory === 'all') || (item.category === currentCategory);
+                const matchesSearch = currentSearchQuery === '' || 
+                    item.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    item.description.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                    item.tags.some(tag => tag.toLowerCase().includes(currentSearchQuery.toLowerCase()));
+                const matchesType = (currentTypeFilter === 'all') || (item.type === currentTypeFilter);
+                const matchesFav = !showFavoritesOnly || favorites.includes(item.id);
+
+                return matchesCategory && matchesSearch && matchesType && matchesFav;
+            });
+
+            // Update Header Information
+            const resourceCount = document.getElementById('resourceCount');
+            const currentFilterLabel = document.getElementById('currentFilterLabel');
+            
+            resourceCount.textContent = `(${filtered.length} รายการ)`;
+            if (showFavoritesOnly) {
+                currentFilterLabel.textContent = 'รายการที่บันทึกไว้';
+            } else {
+                const activeCatObj = categories.find(c => c.id === currentCategory);
+                currentFilterLabel.textContent = activeCatObj ? activeCatObj.name : 'ทั้งหมด';
+            }
+
+            // Handle Empty Search Results
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            // HTML Cards Generation with Realistic Image Thumbnails
+            grid.innerHTML = filtered.map(item => {
+                const isFav = favorites.includes(item.id);
+                const isVideo = item.type === 'video';
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-hover-card transition-all duration-300 flex flex-col overflow-hidden group">
+                        
+                        <!-- Realistic Image/Video Preview Banner -->
+                        <div class="relative h-48 w-full overflow-hidden bg-slate-900">
+                            <img src="${item.imageUrl}" 
+                                 alt="${item.title}" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100">
+                            
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
+
+                            <!-- Badge Type (Video vs Article) -->
+                            <div class="absolute top-3 left-3 flex items-center space-x-2">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
+                                    isVideo 
+                                    ? 'bg-rose-600 text-white flex items-center space-x-1' 
+                                    : 'bg-blue-600 text-white flex items-center space-x-1'
+                                }">
+                                    <i class="fa-solid ${isVideo ? 'fa-play' : 'fa-file-lines'} text-[10px]"></i>
+                                    <span>${isVideo ? 'วิดีโอสาธิต' : 'บทความ/คู่มือ'}</span>
+                                </span>
+                            </div>
+
+                            <!-- Favorite Star Button -->
+                            <button onclick="toggleFavorite(${item.id})" 
+                                    class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/20 text-white hover:text-amber-400 hover:bg-slate-900 transition flex items-center justify-center shadow-lg" 
+                                    title="บันทึกเก็บไว้">
+                                <i class="fa-solid fa-star text-sm ${isFav ? 'text-amber-400' : 'text-white/70'}"></i>
+                            </button>
+
+                            <!-- Play Overlay Button for Videos -->
+                            ${isVideo ? `
+                                <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="absolute inset-0 flex items-center justify-center group/btn">
+                                    <div class="w-12 h-12 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-2xl group-hover/btn:scale-110 transition-transform duration-300 border-2 border-white/80">
+                                        <i class="fa-solid fa-play ml-0.5 text-lg"></i>
+                                    </div>
+                                </a>
+                            ` : ''}
+
+                            <!-- Source attribution at bottom of thumbnail -->
+                            <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-[11px] font-medium">
+                                <span class="truncate bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
+                                    <i class="fa-solid fa-building-columns mr-1 text-teal-300"></i>${item.source}
+                                </span>
+                                <span class="bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
+                                    ${item.readTime}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
+                            <div>
+                                <!-- Title -->
+                                <h3 class="font-bold text-slate-800 text-base leading-snug mb-2 group-hover:text-teal-600 transition duration-200">
+                                    <a href="${item.url}" target="_blank" rel="noopener noreferrer">
+                                        ${item.title}
+                                    </a>
+                                </h3>
+
+                                <!-- Description -->
+                                <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed font-light">
+                                    ${item.description}
+                                </p>
+                            </div>
+
+                            <div>
+                                <!-- Hashtag Pills -->
+                                <div class="flex flex-wrap gap-1.5 mb-4">
+                                    ${item.tags.map(tag => `<button onclick="quickSearch('${tag}')" class="text-[10px] bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 px-2 py-0.5 rounded-md transition">#${tag}</button>`).join('')}
+                                </div>
+
+                                <!-- External Link Action Button -->
+                                <a href="${item.url}" target="_blank" rel="noopener noreferrer" 
+                                    class="w-full py-2.5 px-4 bg-slate-50 hover:bg-teal-600 hover:text-white text-slate-700 rounded-xl font-medium text-xs flex items-center justify-center space-x-2 border border-slate-200/80 transition duration-200 shadow-sm">
+                                    <span>${isVideo ? 'รับชมวิดีโอสาธิตบน YouTube' : 'อ่านคู่มือฉบับเต็ม'}</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Category Filter Action
+        function selectCategory(catId) {
+            currentCategory = catId;
+            showFavoritesOnly = false;
+            updateFavBtnStyle();
+            renderCategories();
+            renderResources();
+        }
+
+        // Search Input Handler
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            currentSearchQuery = input.value.trim();
+            
+            if (currentSearchQuery !== '') {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderResources();
+        }
+
+        // Quick Tag Search
+        function quickSearch(keyword) {
+            const input = document.getElementById('searchInput');
+            input.value = keyword;
+            handleSearch();
+            window.scrollTo({ top: 380, behavior: 'smooth' });
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            handleSearch();
+        }
+
+        // Type Filter (Article vs Video)
+        function setTypeFilter(type) {
+            currentTypeFilter = type;
+            ['all', 'video', 'article'].forEach(t => {
+                const btn = document.getElementById(`typeBtn-${t}`);
+                if (t === type) {
+                    btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-800 bg-white shadow-sm transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition';
+                }
+            });
+            renderResources();
+        }
+
+        // Bookmark / Favorites System
+        function toggleFavorite(id) {
+            const index = favorites.indexOf(id);
+            if (index === -1) {
+                favorites.push(id);
+                showToast('บันทึกบทความเก็บไว้เรียบร้อยแล้ว');
+            } else {
+                favorites.splice(index, 1);
+                showToast('นำออกจากรายการบันทึกแล้ว');
+            }
+            localStorage.setItem('carelink_favs', JSON.stringify(favorites));
+            updateFavBadge();
+            renderResources();
+        }
+
+        function toggleFavoritesOnly() {
+            showFavoritesOnly = !showFavoritesOnly;
+            updateFavBtnStyle();
+            renderCategories();
+            renderResources();
+        }
+
+        function updateFavBtnStyle() {
+            const btn = document.getElementById('favToggleBtn');
+            if (showFavoritesOnly) {
+                btn.className = 'flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-amber-100 border border-amber-300 text-amber-900 shadow-sm';
+            } else {
+                btn.className = 'flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 transition duration-200';
+            }
+        }
+
+        function updateFavBadge() {
+            document.getElementById('favCountBadge').textContent = favorites.length;
+        }
+
+        function resetFilters() {
+            currentCategory = 'all';
+            currentSearchQuery = '';
+            currentTypeFilter = 'all';
+            showFavoritesOnly = false;
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            setTypeFilter('all');
+            updateFavBtnStyle();
+            renderCategories();
+            renderResources();
+        }
+
+        // Daily Checklist Handler
+        function updateChecklist() {
+            const checkboxes = document.querySelectorAll('#checklistItems input[type="checkbox"]');
+            let checkedCount = 0;
+            const checkedStates = [];
+
+            checkboxes.forEach((cb) => {
+                if (cb.checked) checkedCount++;
+                checkedStates.push(cb.checked);
+            });
+
+            const total = checkboxes.length;
+            const percentage = Math.round((checkedCount / total) * 100);
+
+            document.getElementById('checklistProgress').textContent = `${checkedCount}/${total}`;
+            document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+
+            if (checkedCount === total) {
+                showToast('🎉 เก่งมากค่ะ! คุณดูแลผู้ป่วยครบทุกกิจวัตรประจำวันนี้แล้ว');
+            }
+
+            localStorage.setItem('carelink_checklist', JSON.stringify(checkedStates));
+        }
+
+        function loadChecklistState() {
+            const saved = JSON.parse(localStorage.getItem('carelink_checklist') || '[]');
+            const checkboxes = document.querySelectorAll('#checklistItems input[type="checkbox"]');
+            
+            checkboxes.forEach((cb, idx) => {
+                if (saved[idx] !== undefined) {
+                    cb.checked = saved[idx];
+                }
+            });
+            updateChecklist();
+        }
+
+        // Modal Form Handlers
+        function openSuggestModal() {
+            document.getElementById('suggestModal').classList.remove('hidden');
+        }
+
+        function closeSuggestModal() {
+            document.getElementById('suggestModal').classList.add('hidden');
+        }
+
+        function handleSuggestSubmit(e) {
+            e.preventDefault();
+            closeSuggestModal();
+            showToast('ขอบคุณสำหรับการแนะนำลิงก์ ทีมงานจะทำการตรวจสอบก่อนเผยแพร่');
+            e.target.reset();
+        }
+
+        // Toast Notification System
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
